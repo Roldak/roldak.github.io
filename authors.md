@@ -19,6 +19,8 @@ The miniboxing plugin <a href="https://github.com/miniboxing/miniboxing-plugin/"
 
 * [Vlad Ureche](http://vladureche.ro) - main developer for the miniboxing plugin
 * [Cristian Talau](https://github.com/ctalau) - developed the initial miniboxing prototype, as a semester project
+* [Milos Stojanovic](https://github.com/milosstojanovic) - `TupleX` accessors, type class tweaks, warnings
+* [Romain Beguet](https://github.com/Roldak) - `MbArray` tweaks
 * [Aymeric Genet](https://github.com/MelodyLucid) - developed [collection-like benchmarks](https://github.com/MelodyLucid/freezing-ironman) for the miniboxing plugin
 * [Dmitry Petrashko](https://github.com/DarkDimius) - fixes
 * [Ilya Klyuchnikov](https://github.com/ilya-klyuchnikov) - fixes

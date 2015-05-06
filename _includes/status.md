@@ -7,8 +7,8 @@
   <p>The miniboxing release currently supports two specific versions of the Scala compiler:
   <img src="/images/mbox.png" alt="paper" height="100px" align="right"/>
   <ul>
-    <li><b>2.11.5</b>, the current release in the 2.11 series and</li>
-    <li><b>2.10.4</b>, the current release in the 2.10 series</li>
+    <li><b>2.11.6</b>, the current release in the 2.11 series and</li>
+    <li><b>2.10.5</b>, the current release in the 2.10 series</li>
   </ul></p>
   <p>Due to compiler bugs (for the 2.10 series) and binary incompatibility of the compiler API (for the 2.11 series), we do not currently support the other versions. We are planning, however, <a href="https://github.com/miniboxing/miniboxing-plugin/issues/140" target="_blank">to fully cross-compile against all 2.10 and 2.11 versions</a> and to provide error messages for the earlier and unsupported versions of the Scala compiler. We&#39;re sorry for this, but the engineering effort in supporting even two versions of the compiler is significant!</p>
 </div>
