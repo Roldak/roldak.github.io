@@ -48,72 +48,27 @@ Specializing class C...
 defined class C
 {% endhighlight %}
 
-MbArrays are included in the runtime support package for the miniboxing transformation. To see how to add miniboxing to your project, please see [this page](example.html).
+MbArrays are included in the runtime support package for the miniboxing transformation. To see how to add miniboxing to your project, please see [this page](using_sbt.html).
 
 ## Usage
 
-Let's take a closer look at how exactly a program can be transformed to take full advantage of the miniboxing transformation and MbArrays. Consider a classic implementation of the merge sort algorithm using a raw `Array` with an implicit `ClassTag` :
+Let's take a closer look at how exactly a program can be transformed to take full advantage of the miniboxing transformation and MbArrays. Consider a classic implementation of the merge sort algorithm, at first using a raw `Array` with an implicit `ClassTag` (to whole source code can be found [at this page](https://github.com/Roldak/mb-benchmarks/blob/master/mergesort-no-mb/src/main/scala/Main.scala)) :
 
 {% highlight scala %}
 
-import scala.reflect._
-import scala.util._
-
-object MergeSort {
-  def mergeSort[T : ClassTag](ary: Array[T], comp: (T, T) => Boolean): Array[T] = {
-    def merge(a: Array[T], b: Array[T]): Array[T] = {
-      val res = new Array[T](a.length + b.length)
-      var ai = 0
-      var bi = 0
-      while (ai < a.length && bi < b.length) {
-        if (comp(a(ai), b(bi))) {
-          res(ai + bi) = a(ai)
-          ai += 1
-	} else {
-          res(ai + bi) = b(bi)
-          bi += 1
-	}
-      }
-      while (ai < a.length) {
-        res(ai + bi) = a(ai)
-        ai += 1
-      }
-      while (bi < b.length) {
-        res(ai + bi) = b(bi)
-        bi += 1
-      }
-      res
-    }
-    val len = ary.length
-    if (len <= 1) ary
-    else {
-      val mid = len / 2
-      val a = new Array[T](mid)
-      val b = new Array[T](len - mid)
-	  
-      var i = 0
-      while (i < mid) {
-        a(i) = ary(i)
-        i += 1
-      }
-      while (i < len) {
-        b(i - mid) = ary(i)
-        i += 1
-      }
-	  
-      merge(mergeSort(a, comp), mergeSort(b, comp))
-    }
+def mergeSort[T : ClassTag](ary: Array[T], comp: (T, T) => Boolean): Array[T] = {
+  def merge(a: Array[T], b: Array[T]): Array[T] = {
+    val res = new Array[T](a.length + b.length)
+    ...
   }
-  
-  final val len = 50
-  
-  def main(args: Array[String]) = {
-    val ary = new Array[Int](len)
-    val rnd = new Random
-    for (i <- 0 until len) {
-      ary(i) = rnd.nextInt(len)
-    }
-    val sorted = mergeSort(ary, (a: Int, b: Int) => a < b)
+  val len = ary.length
+  if (len <= 1) ary
+  else {
+    val mid = len / 2
+    val a = new Array[T](mid)
+    val b = new Array[T](len - mid)
+    ...
+    merge(mergeSort(a, comp), mergeSort(b, comp))
   }
 }
   
@@ -122,6 +77,28 @@ object MergeSort {
 ### The transformation
 
 Now let's transform the code above such that it uses miniboxing and MbArrays. 
+First, we should configure the project so that it includes the Miniboxing plugin. [You can find more informations about this here](using_sbt.html).
+
+While rebuilding the project, we can observe that the miniboxing plugin yields different warnings (here, only keeping those that are related to the `ClassTag` version of the MergeSort) : 
+
+{% highlight bash %}
+[warn] .../mb-benchmarks/mergesort-mb/src/main/scala/Main.scala:107: The following code 
+could benefit from miniboxing specialization if the type parameter T of method mergeSort 
+would be marked as "@miniboxed T" (it would be used to instantiate miniboxed type parameter 
+T1 of traitMiniboxedFunction2)
+[warn]         if (comp(a(ai), b(bi))) {
+[warn]             ^
+[warn] .../mb-benchmarks\mergesort-mb\src\main\scala\Main.scala:226: The method 
+miniboxing.example.MergeSort.mergeSort would benefit from miniboxing type parameter T, 
+since it is instantiated by a primitive type.
+[warn]       mergeSortCT(aryC, (a: Int, b: Int) => a < b)
+[warn]       ^
+[warn] ... warnings found
+{% endhighlight %}
+
+It basically tells us that our code is suboptimal and could get faster by following the advice that are given for each warning. Let's add the `@miniboxed` annotation on the type parameter `T` of the `MergeSort` method. Recompiling will yield : 
+
+// TODO  do the rest
 
 1. Let's first add the line `import MbArray._`.
 2. Then, replace all occurences of the type `Array[T]` by `MbArray[T]`, and all the array instantiations `new Array[T](...)` by `MbArray.empty[T](...)`. 
