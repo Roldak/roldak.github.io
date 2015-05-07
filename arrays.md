@@ -52,7 +52,7 @@ MbArrays are included in the runtime support package for the miniboxing transfor
 
 ## Usage
 
-Let's take a closer look at how exactly a program can be transformed to take full advantage of the miniboxing transformation and MbArrays. Consider a classic implementation of the merge sort algorithm, at first using a raw `Array` with an implicit `ClassTag` (to whole source code can be found [at this page](https://github.com/Roldak/mb-benchmarks/blob/master/mergesort-no-mb/src/main/scala/Main.scala)) :
+Let's take a closer look at how exactly a program can be transformed to take full advantage of the miniboxing transformation and MbArrays. Consider a classic implementation of the merge sort algorithm, at first using a raw `Array` with an implicit `ClassTag` :
 
 {% highlight scala %}
 
@@ -73,6 +73,8 @@ def mergeSort[T : ClassTag](ary: Array[T], comp: (T, T) => Boolean): Array[T] = 
 }
   
 {% endhighlight %}
+
+To make this page more readable, we removed most of the merge sort algorithm only to keep the lines that are relevant to the tutorial, that is, the lines where the `Array`s are instantiated. If you would like to see the whole source code, [it can be found here](https://github.com/Roldak/mb-benchmarks/blob/master/mergesort-no-mb/src/main/scala/Main.scala)).
 
 ### The transformation
 
