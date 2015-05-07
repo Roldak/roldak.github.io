@@ -74,137 +74,69 @@ def mergeSort[T : ClassTag](ary: Array[T], comp: (T, T) => Boolean): Array[T] = 
   
 {% endhighlight %}
 
-To make this page more readable, we removed most of the merge sort algorithm only to keep the lines that are relevant to the tutorial, that is, the lines where the `Array`s are instantiated. If you would like to see the whole source code, [it can be found here](https://github.com/Roldak/mb-benchmarks/blob/master/mergesort-no-mb/src/main/scala/Main.scala)).
+To make this page more readable, we removed most of the merge sort algorithm only to keep the lines that are relevant to the tutorial, that is, the lines where the `Array`s are instantiated. If you would like to see the whole source code, [it can be found here](code_examples/mbarrays/before_transformation.scala).
 
 ### The transformation
 
-Now let's transform the code above such that it uses miniboxing and MbArrays. 
+Now let's transform the code above such that it uses miniboxing and `MbArray`s. 
 First, we should configure the project so that it includes the Miniboxing plugin. [You can find more informations about this step here](using_sbt.html).
 
 When rebuilding the project, we observe that the miniboxing plugin yields different warnings : (here, only keeping those that are related to the `ClassTag` version of the MergeSort)
 
 {% highlight bash %}
-[warn] .../mb-benchmarks/mergesort-mb/src/main/scala/Main.scala:107: The following code 
-could benefit from miniboxing specialization if the type parameter T of method mergeSort 
-would be marked as "@miniboxed T" (it would be used to instantiate miniboxed type parameter 
-T1 of traitMiniboxedFunction2)
+[warn] .../Main.scala:11: The following code could benefit from miniboxing specialization
+if the type parameter T of method mergeSort would be marked as "@miniboxed T" 
+(it would be used to instantiate miniboxed type parameter T1 of trait MiniboxedFunction2)
 [warn]         if (comp(a(ai), b(bi))) {
 [warn]             ^
-[warn] .../mb-benchmarks\mergesort-mb\src\main\scala\Main.scala:226: The method 
-miniboxing.example.MergeSort.mergeSort would benefit from miniboxing type parameter T, 
-since it is instantiated by a primitive type.
-[warn]       mergeSortCT(aryC, (a: Int, b: Int) => a < b)
-[warn]       ^
-[warn] ... warnings found
+[warn] .../Main.scala:53: Use MbArray instead of Array and benefit from miniboxing specialization
+[warn]     val ary = new Array[Int](len)
+[warn]               ^
+[warn] .../Main.scala:58: The method MergeSort.mergeSort would benefit from miniboxing 
+type parameter T, since it is instantiated by a primitive type.
+[warn]     val sorted = mergeSort(ary, (a: Int, b: Int) => a < b)
+[warn]                  ^
+[warn] three warnings found
 {% endhighlight %}
 
 It is essentially telling us that our code is suboptimal and that it could make it faster if we were to follow the advices that are given for each warning. Let's add the `@miniboxed` annotation on the type parameter `T` of the `MergeSort` method. Recompiling will yield : 
 
-// TODO do the rest
+<!--- The new warnings here -->
 
-1. Let's first add the line `import MbArray._`.
-2. Then, replace all occurences of the type `Array[T]` by `MbArray[T]`, and all the array instantiations `new Array[T](...)` by `MbArray.empty[T](...)`. 
-3. Finally, remove the `ClassTag` bound on the type parameter `T`.
+Notice that adding `@miniboxed` annotations enabled a new set of optimizations : Since our array instantiations are now done in a miniboxed context, we are suggested to replace `Array`s with `MbArray`s. At this point, it is necessary anymore to keep the `ClassTag` bound on `T` : We can safely remove it (and should !).
+The final transformation looks like this : 
 
-Compiling at this point will yield the following output :
-
-{% highlight bash %}
-[warn] (...) The method MergeSort.mergeSort would benefit from miniboxing type parameter T, 
-since it is instantiated by a primitive type.
-[warn]     val sorted = mergeSort(ary, (a: Int, b: Int) => a < b)
-[warn]                  ^
-[warn] (...) The following code instantiating an `MbArray` object cannot be optimized since the 
-type argument is not a primitive type (like Int), a miniboxed type parameter or a subtype of 
-AnyRef. This means that primitive types could end up boxed:
-[warn]    val res = MbArray.empty[T](a.length + b.length)
-[warn]                      ^
-[warn] (...) The following code instantiating an `MbArray` object cannot be optimized since the 
-type argument is not a primitive type (like Int), a miniboxed type parameter or a subtype of 
-AnyRef. This means that primitive types could end up boxed:
-[warn]    val a = MbArray.empty[T](mid)
-[warn]                    ^
-[warn] (...) The following code instantiating an `MbArray` object cannot be optimized since the 
-type argument is not a primitive type (like Int), a miniboxed type parameter or a subtype of 
-AnyRef. This means that primitive types could end up boxed:
-[warn]    val b = MbArray.empty[T](len - mid)
-[warn]                    ^
-[warn] 5 warnings found
-{% endhighlight %}
- 
-The miniboxing plugin informs us that code is suboptimal and could get faster if we were to use the `@miniboxed` annotation on the type parameter `T`. After proceeding and compiling again, we observe that there are no more warnings and our code has been successfully optimized by the miniboxing transformation. The final transformation looks like this : 
 {% highlight scala %}
 
-import scala.reflect._
-import scala.util._
-
-object MergeSort {
-  def mergeSort[@miniboxed T](ary: MbArray[T], comp: (T, T) => Boolean): MbArray[T] = {
-    def merge(a: MbArray[T], b: MbArray[T]): MbArray[T] = {
-      val res = MbArray.empty[T](a.length + b.length)
-      var ai = 0
-      var bi = 0
-      while (ai < a.length && bi < b.length) {
-        if (comp(a(ai), b(bi))) {
-          res(ai + bi) = a(ai)
-          ai += 1
-        } else {
-          res(ai + bi) = b(bi)
-          bi += 1
-        }
-      }
-      while (ai < a.length) {
-          res(ai + bi) = a(ai)
-          ai += 1
-      }
-      while (bi < b.length) {
-          res(ai + bi) = b(bi)
-          bi += 1
-      }
-      res
-    }
-    val len = ary.length
-    if (len <= 1) ary
-    else {
-      val mid = len / 2
-      val a = MbArray.empty[T](mid)
-      val b = MbArray.empty[T](len - mid)
-      
-      var i = 0
-      while (i < mid) {
-        a(i) = ary(i)
-        i += 1
-      }
-      while (i < len) {
-        b(i - mid) = ary(i)
-        i += 1
-      }
-      
-      merge(mergeSort(a, comp), mergeSort(b, comp))
-    }
+def mergeSort[@miniboxed T](ary: MbArray[T], comp: (T, T) => Boolean): MbArray[T] = {
+  def merge(a: MbArray[T], b: MbArray[T]): MbArray[T] = {
+    val res = MbArray.empty[T](a.length + b.length)
+    ...
   }
-  
-  final val len = 50
-  
-  def main(args: Array[String]) = {
-    val ary = MbArray.empty[Int](len)
-    val rnd = new Random
-    for (i <- 0 until len) {
-      ary(i) = rnd.nextInt(len)
-    }
-    val sorted = mergeSort(ary, (a: Int, b: Int) => a < b)
+  val len = ary.length
+  if (len <= 1) ary
+  else {
+    val mid = len / 2
+    val a = MbArray.empty[T](mid)
+    val b = MbArray.empty[T](len - mid)
+    ...
+    merge(mergeSort(a, comp), mergeSort(b, comp))
   }
 }
   
 {% endhighlight %}
+
+You can find the complete version of the transformed code [here](code_examples/mbarrays/after_transformation.scala)
+
 ### Benchmarks
 
-We benchmarked the merge sort algorithm implementation above with different sizes of array and ended up with the following numbers (in milliseconds) :
+We benchmarked the two version of the merge sort algorithm implementations (before and after the transformation) with different sizes of array and ended up with the following numbers (in milliseconds) :
 
 | Array Size    | Array with ClassTag  | MbArray  | Improvement |
 | ------------- |----------------------| ---------|-------------|
-| 500'000       | 713    	       | 528      | 35%   	|
-| 1'000'000     | 1536                 | 1163     | 32%		|
-| 3'000'000     | 5311                 | 3545     | 50%    	|
+| 500'000       | 713    	         | 528      | 35%   	    |
+| 1'000'000     | 1536                 | 1163     | 32%	    |
+| 3'000'000     | 5311                 | 3545     | 50%    	    |
 
 We can observe an average speedup of approximately 40%.
 Note that the Array with ClassTag version is compiled without the miniboxing plugin.
