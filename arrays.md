@@ -101,9 +101,18 @@ type parameter T, since it is instantiated by a primitive type.
 
 It is essentially telling us that our code is suboptimal and that it could make it faster if we were to follow the advices that are given for each warning. Let's add the `@miniboxed` annotation on the type parameter `T` of the `MergeSort` method. Recompiling will yield : 
 
-<!--- The new warnings here -->
+<!-- Adding the warning by hand -->
+{% highlight bash %}
+[warn] .../Main.scala:7: Use MbArray instead of Array and benefit from miniboxing specialization
+[warn]     val res = new Array[T](a.length + b.length)
+[warn]               ^
+[warn] .../Main.scala:53: Use MbArray instead of Array and benefit from miniboxing specialization
+[warn]     val ary = new Array[Int](len)
+[warn]               ^
+[warn] two warnings found
+{% endhighlight %}
 
-Notice that adding `@miniboxed` annotations enabled a new set of optimizations : Since our array instantiations are now done in a miniboxed context, we are suggested to replace `Array`s with `MbArray`s. At this point, it is necessary anymore to keep the `ClassTag` bound on `T` : We can safely remove it (and should !).
+Notice that adding `@miniboxed` annotations enabled a new set of optimizations : Since our array instantiations are now done in a miniboxed context, we are suggested to replace `Array`s with `MbArray`s. At this point, it is not necessary anymore to keep the `ClassTag` bound on `T` : We can (and should !) safely remove it .
 The final transformation looks like this : 
 
 {% highlight scala %}
