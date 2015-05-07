@@ -30,7 +30,28 @@ scala> class B[T: ClassTag](len: Int) {
 defined class B
 {% endhighlight %}
 
-While this works, it may not be sufficiently fast for algorithms where high performance is expected. Instead, `MbArray` combined with the miniboxing transformation offers performance that are similar to those of raw `Array`s without having to carry around a `ClassTag`. The following code will work without requiring any condition on `T`. On top of that, any read or write to the array will perform better.
+While this wasn't too difficult for class B, the transformation is not possible in the general case because it affects all generics transitively:
+
+{% highlight scala %}
+scala> class C[T] extends B[T]
+<console>:16: error: No ClassTag available for T
+       class C[T] extends B[T]
+                          ^
+{% endhighlight %}
+
+Thus, in many applications, programmers have resorted to allocating arrays of object and casting them as generic arrays, an approach which is both incorrect and slow:
+
+{% highlight scala %}
+scala> def baz[T] = new Array[AnyRef](10).asInstanceOf[Array[T]]
+baz: [T]=> Array[T]
+
+scala> baz[Int](0)
+java.lang.ClassCastException: [Ljava.lang.Object; cannot be cast to [I
+  ... 33 elided. 
+  
+{% endhighlight %}
+
+Instead, `MbArray` combined with the miniboxing transformation offers performance that are similar to those of raw `Array`s without requiring to carry around a `ClassTag`. The following code will work without requiring any condition on `T`. On top of that, any read or write to the array will perform better.
 
 {% highlight scala %}
 scala> class C[@miniboxed T](len:Int) {
@@ -148,7 +169,7 @@ You can try it yourself by downloading the benchmarks [here](https://github.com/
 
 ## Conclusion
 
-* Raw `Array`: Perform well, but cannot be instantiated in generic contexts.
+* Raw `Array`: Performs well, but cannot be instantiated in generic contexts.
 * Raw `Array` with `ClassTag`: Can be instantiated in generic contexts, but introduces performance overhead.
 * `MbArray`: Can be instantiated in generic contexts, and will perform well if the generic context is miniboxed.
 
