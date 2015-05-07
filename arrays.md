@@ -77,9 +77,9 @@ def mergeSort[T : ClassTag](ary: Array[T], comp: (T, T) => Boolean): Array[T] = 
 ### The transformation
 
 Now let's transform the code above such that it uses miniboxing and MbArrays. 
-First, we should configure the project so that it includes the Miniboxing plugin. [You can find more informations about this here](using_sbt.html).
+First, we should configure the project so that it includes the Miniboxing plugin. [You can find more informations about this step here](using_sbt.html).
 
-While rebuilding the project, we can observe that the miniboxing plugin yields different warnings (here, only keeping those that are related to the `ClassTag` version of the MergeSort) : 
+When rebuilding the project, we observe that the miniboxing plugin yields different warnings : (here, only keeping those that are related to the `ClassTag` version of the MergeSort)
 
 {% highlight bash %}
 [warn] .../mb-benchmarks/mergesort-mb/src/main/scala/Main.scala:107: The following code 
@@ -96,9 +96,9 @@ since it is instantiated by a primitive type.
 [warn] ... warnings found
 {% endhighlight %}
 
-It basically tells us that our code is suboptimal and could get faster by following the advice that are given for each warning. Let's add the `@miniboxed` annotation on the type parameter `T` of the `MergeSort` method. Recompiling will yield : 
+It is essentially telling us that our code is suboptimal and that it could make it faster if we were to follow the advices that are given for each warning. Let's add the `@miniboxed` annotation on the type parameter `T` of the `MergeSort` method. Recompiling will yield : 
 
-// TODO  do the rest
+// TODO do the rest
 
 1. Let's first add the line `import MbArray._`.
 2. Then, replace all occurences of the type `Array[T]` by `MbArray[T]`, and all the array instantiations `new Array[T](...)` by `MbArray.empty[T](...)`. 
