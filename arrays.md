@@ -157,13 +157,13 @@ You can find the complete version of the transformed code [here](code_examples/m
 
 We benchmarked the merge sort algorithm implementation above with different sizes of array and ended up with the numbers below (in milliseconds). Here, even though our main goal is to compare `MbArray` against `Array` with `ClassTag`, we also included the `Array[AnyRef]` version, which is one of the current way to bypass the limitations of generic array instantiation as it has been briefly mentionned above, as well as the `Array[Int]` version, which is the ideal, hand-specialized version of the benchmark (not generic).
 
+![Benchmark Graph](graphs/mbarrays/benchmark1.png)
+
 | Array Size    | `MbArray` | `Array` with `ClassTag` |  `Array[AnyRef]` | `Array[Int]`  |
 | ------------- |-----------|-------------------------|---------------|---------------|
 | 500'000       | 521       | 766  (<font color="red"> +47% </font>) | 487 (<font color="green"> -7% </font>) | 132 (<font color="green"> -75% </font>) |
 | 1'000'000     | 1089      | 1639 (<font color="red"> +50% </font>) | 1134 (<font color="red"> +4% </font>) | 309 (<font color="green"> -72% </font>)  |
 | 3'000'000     | 3536      | 5349 (<font color="red"> +51% </font>) | 4110 (<font color="red"> +16% </font>) | 855 (<font color="green"> -76% </font>) |
-
-![Benchmark Graph](graphs/mbarrays/benchmark1.png)
 
 We can observe an average slowdown for `Array` with `ClassTag` against `MbArray` of approximately 50%.
 Without much surprise, the version specialized by hand for `Int` is way faster than any generic variant.
