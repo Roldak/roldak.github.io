@@ -128,7 +128,7 @@ It is essentially telling us that our code is suboptimal and that it could make 
 [warn] two warnings found
 {% endhighlight %}
 
-Notice that adding `@miniboxed` annotations enabled a new set of optimizations: Since our array instantiations are now done in a miniboxed context, we are suggested to replace `Array`s with `MbArray`s. At this point, it is not necessary anymore to keep the `ClassTag` bound on `T`: We can (and should !) safely remove it .
+Notice that adding `@miniboxed` annotations enabled a new set of optimizations: Since our array instantiations are now done in a miniboxed context, we are suggested to replace `Array`s with `MbArray`s. At this point, it is not necessary anymore to keep the `ClassTag` bound on `T`: We can (and should !) safely remove it.
 The final transformation looks like this: 
 
 {% highlight scala %}
@@ -151,7 +151,7 @@ def mergeSort[@miniboxed T](ary: MbArray[T], comp: (T, T) => Boolean): MbArray[T
   
 {% endhighlight %}
 
-You can find the complete version of the transformed code [here](code_examples/mbarrays/after_transformation.scala)
+You can find the complete version of the transformed code [here](code_examples/mbarrays/after_transformation.scala).
 
 ### Benchmarks
 
@@ -159,12 +159,12 @@ We benchmarked the merge sort algorithm implementation above with different size
 
 | Array Size    | `MbArray` | `Array` with `ClassTag` |  `Array[Any]` | `Array[Int]`  |
 | ------------- |-----------|-------------------------|---------------|---------------|
-| 500'000       | 521       | 856  (<font color="red"> +64% </font>) | 487 (<font color="green"> -7% </font>) | 132 (<font color="green"> -75% </font>) |
+| 500'000       | 521       | 766  (<font color="red"> +47% </font>) | 487 (<font color="green"> -7% </font>) | 132 (<font color="green"> -75% </font>) |
 | 1'000'000     | 1089      | 1639 (<font color="red"> +50% </font>) | 1134 (<font color="red"> +4% </font>) | 309 (<font color="green"> -72% </font>) |
 | 3'000'000     | 3536      | 5349 (<font color="red"> +51% </font>) | 4110 (<font color="red"> +16% </font>) | 855 (<font color="green"> -76% </font>) |
 
-We can observe an average speedup of approximately 40%.
-Note that the Array with ClassTag version is compiled without the miniboxing plugin.
+We can observe an average slowdown for `Array` with `ClassTag` against `MbArray` of approximately 50%.
+Note that the `Array` with `ClassTag` version is compiled without the miniboxing plugin.
 
 You can try it yourself by downloading the benchmarks [here](https://github.com/Roldak/mb-benchmarks).
 
