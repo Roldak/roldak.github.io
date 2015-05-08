@@ -164,7 +164,7 @@ We benchmarked the merge sort algorithm implementation above with different size
 | 3'000'000     | 3536      | 5349 (<font color="red"> +51% </font>) | 4110 (<font color="red"> +16% </font>) | 855 (<font color="green"> -76% </font>) |
 
 We can observe an average slowdown for `Array` with `ClassTag` against `MbArray` of approximately 50%.
-Without much surprise, the version specialized by hands for `Int` is way faster than any generic variant.
+Without much surprise, the version specialized by hand for `Int` is way faster than any generic variant.
 Note that the `Array` with `ClassTag` version is compiled without the miniboxing plugin.
 
 You can try it yourself by downloading the benchmarks [here](https://github.com/Roldak/mb-benchmarks).
