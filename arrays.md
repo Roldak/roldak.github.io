@@ -155,16 +155,17 @@ You can find the complete version of the transformed code [here](code_examples/m
 
 ### Benchmarks
 
-We benchmarked the two version of the merge sort algorithm implementations (before and after the transformation) with different sizes of array and ended up with the following numbers (in milliseconds):
+We benchmarked the merge sort algorithm implementation above with different sizes of array and ended up with the numbers of the table below (in milliseconds). Here, even though our main goal is to compare `MbArray` against `Array` with `ClassTag`, we also included the `Array[Any]` version, which is one of the current way to bypass the limitations of generic array instantiation as it has been briefly mentionned above, as well as the `Array[Int]` version, which is the ideal, hand-specialized version of the benchmark (not generic).
 
-| Array Size    | `Array` with `ClassTag` | `MbArray` | Improvement |
-| ------------- |-------------------------| ----------|-------------|
-| 500'000       | 713    	            | 528       | 35%   	   |
-| 1'000'000     | 1536                    | 1163      | 32%	        |
-| 3'000'000     | 5311                    | 3545      | 50%    	   |
+| Array Size    | `MbArray` | `Array` with `ClassTag` |  `Array[Any]` | `Array[Int]`  |
+| ------------- |-----------|-------------------------|---------------|---------------|
+| 500'000       | 521       | 856  (<font color="red"> +64% </font>) | 487 (<font color="green"> -7% </font>) | 132 (<font color="green"> -75% </font>) |
+| 1'000'000     | 1089      | 1639 (<font color="red"> +50% </font>) | 1134 (<font color="red"> +4% </font>) | 309 (<font color="green"> -72% </font>) |
+| 3'000'000     | 3536      | 5349 (<font color="red"> +51% </font>) | 4110 (<font color="red"> +16% </font>) | 855 (<font color="green"> -76% </font>) |
 
 We can observe an average speedup of approximately 40%.
-Note that the `Array` with `ClassTag` version is compiled without the miniboxing plugin.
+Note that the Array with ClassTag version is compiled without the miniboxing plugin.
+
 You can try it yourself by downloading the benchmarks [here](https://github.com/Roldak/mb-benchmarks).
 
 ## Conclusion
